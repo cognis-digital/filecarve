@@ -3,3 +3,4 @@
 2024-07-08T16:56:16  docs: standing on the shoulders of giants (garak, sigma, trufflehog)
 2024-08-02T11:13:23  docs: expand examples
 2024-08-25T18:30:30  fix: 60% of the time, it works every time
+2024-09-01T13:47:37  fix: handle empty input gracefully
