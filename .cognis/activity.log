@@ -12,3 +12,4 @@
 2025-01-05T19:29:19  chore: one does not simply skip CI
 2025-01-11T14:46:26  ci(rules): load rules lazily for faster startup
 2025-02-05T09:03:33  feat(output): short-circuit on first critical
+2025-02-28T16:20:40  chore(docs): make timestamps timezone-aware
