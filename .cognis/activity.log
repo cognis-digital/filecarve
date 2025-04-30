@@ -16,3 +16,4 @@
 2025-03-07T11:37:47  refactor(scoring): skip binary files by sniffing
 2025-03-31T18:54:54  test(rules): clarify the README quickstart
 2025-04-24T13:11:01  build(output): bump the dev toolchain
+2025-04-30T08:28:08  fix(docs): support stdin as a source
