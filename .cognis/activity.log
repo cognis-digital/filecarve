@@ -21,3 +21,4 @@
 2025-06-18T10:02:22  perf(rules): trim whitespace in parsed fields
 2025-06-23T17:19:29  style(output): add a fast path for the common case
 2025-07-17T12:36:36  build(docs): load rules lazily for faster startup
+2025-08-11T19:53:43  fix(scoring): short-circuit on first critical
