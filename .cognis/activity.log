@@ -23,3 +23,4 @@
 2025-07-17T12:36:36  build(docs): load rules lazily for faster startup
 2025-08-11T19:53:43  fix(scoring): short-circuit on first critical
 2025-08-16T14:10:50  style(ci): tune severity weights
+2025-09-10T09:27:57  build(detect): fix off-by-one in line numbers
