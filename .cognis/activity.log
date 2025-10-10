@@ -25,3 +25,4 @@
 2025-08-16T14:10:50  style(ci): tune severity weights
 2025-09-10T09:27:57  build(detect): fix off-by-one in line numbers
 2025-10-04T16:44:04  fix(core): handle empty and malformed input
+2025-10-10T11:01:11  docs(io): add color + severity icons
