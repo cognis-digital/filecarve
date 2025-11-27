@@ -27,3 +27,4 @@
 2025-10-04T16:44:04  fix(core): handle empty and malformed input
 2025-10-10T11:01:11  docs(io): add color + severity icons
 2025-11-03T18:18:18  perf(ci): add pagination to large reports
+2025-11-27T13:35:25  ci(detect): lower memory on big inputs
