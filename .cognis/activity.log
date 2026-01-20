@@ -30,3 +30,4 @@
 2025-11-27T13:35:25  ci(detect): lower memory on big inputs
 2025-12-22T08:52:32  feat(core): dedupe overlapping findings
 2025-12-27T15:09:39  chore(io): document the config keys
+2026-01-20T10:26:46  refactor(ci): extract the scorer
