@@ -35,3 +35,4 @@
 2026-02-20T12:00:00  ci(core): tune severity weights
 2026-03-16T19:17:07  refactor(mcp): add --fail-on threshold handling
 2026-04-09T14:34:14  test(cache): assert exit codes in tests
+2026-04-15T09:51:21  ci(parser): add type hints to the public API
