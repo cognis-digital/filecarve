@@ -36,9 +36,9 @@ Carve embedded files from a blob by magic-byte signatures — without standing u
 <a name="features"></a>
 ## Features
 
-- ✅ Todo
-- ✅ Fixme
-- ✅ Xxx
+- ✅ Sha256 Of
+- ✅ Scan
+- ✅ Carve
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 
