@@ -98,7 +98,7 @@ def _render_html(found: list[Carved], src: str) -> str:
             "</tr>"
         )
     summary_cells = "".join(
-        f"<div class='card' style='border-left:6px solid {_SEV_COLOR.get(k, \"#6b7280\")}'>"
+        f"<div class='card' style='border-left:6px solid {_SEV_COLOR.get(k, '#6b7280')}'>"
         f"<div class='big'>{v}</div><div class='lbl'>{html.escape(k)}</div></div>"
         for k, v in sorted(counts.items(), key=lambda kv: kv[0])
     ) or "<div class='card'><div class='big'>0</div><div class='lbl'>findings</div></div>"
