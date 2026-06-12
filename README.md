@@ -16,7 +16,7 @@
 </div>
 
 ```bash
-pip install cognis-filecarve
+pip install "git+https://github.com/cognis-digital/filecarve.git"
 filecarve scan .            # → prioritized findings in seconds
 ```
 
@@ -48,7 +48,7 @@ Carve embedded files from a blob by magic-byte signatures — without standing u
 ## Quick start
 
 ```bash
-pip install cognis-filecarve
+pip install "git+https://github.com/cognis-digital/filecarve.git"
 filecarve --version
 filecarve scan .                       # scan current project
 filecarve scan . --format json         # machine-readable
