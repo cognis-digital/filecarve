@@ -20,6 +20,40 @@ pip install cognis-filecarve
 filecarve scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+1. **Install** the CLI:
+
+   ```bash
+   pipx install "git+https://github.com/cognis-digital/filecarve.git"
+   ```
+
+2. **Scan** a blob first to preview carve candidates (writes nothing) — the safe primary command:
+
+   ```bash
+   filecarve scan disk.img
+   cat disk.img | filecarve scan -          # or read from stdin
+   ```
+
+3. **Carve** the embedded files out to a directory, optionally filtering by type and minimum size:
+
+   ```bash
+   filecarve carve disk.img -o carved/ --type jpg --type png --min-size 1024
+   ```
+
+4. **Read the output** — choose table, JSON, or a shareable HTML report, and write it to a file:
+
+   ```bash
+   filecarve --format json scan disk.img > carves.json
+   filecarve --format html -r report.html scan disk.img
+   ```
+
+5. **Automate in a pipeline** — inventory embedded files from an artifact:
+
+   ```bash
+   filecarve --format json scan firmware.bin | jq '.[].ext' | sort | uniq -c
+   ```
+
 ## Contents
 
 - [Why filecarve?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
