@@ -169,11 +169,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp_scan = sub.add_parser("scan", help="list carved candidates (writes no files)")
     sp_scan.add_argument("blob", help="input file, or - for stdin")
+    sp_scan.add_argument("--format", choices=["table", "json", "html"],
+                         help="output format (overrides global --format)")
+    sp_scan.add_argument("-r", "--report", metavar="PATH",
+                         help="write the formatted report to PATH instead of stdout")
 
     sp_carve = sub.add_parser("carve", help="carve and write files to a directory")
     sp_carve.add_argument("blob", help="input file, or - for stdin")
     sp_carve.add_argument("-o", "--out", required=True, metavar="DIR",
                           help="output directory for carved files")
+    sp_carve.add_argument("--format", choices=["table", "json", "html"],
+                         help="output format (overrides global --format)")
+    sp_carve.add_argument("-r", "--report", metavar="PATH",
+                         help="write the formatted report to PATH instead of stdout")
     return p
 
 
@@ -199,9 +207,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 2
 
     src = args.blob if args.blob != "-" else "<stdin>"
-    if args.format == "json":
+    fmt = args.format or "table"
+    if fmt == "json":
         out = _render_json(found, src)
-    elif args.format == "html":
+    elif fmt == "html":
         out = _render_html(found, src)
     else:
         out = _render_table(found, src)

@@ -20,6 +20,12 @@ pip install "git+https://github.com/cognis-digital/filecarve.git"
 filecarve scan .            # → prioritized findings in seconds
 ```
 
+<!-- cognis:layman:start -->
+## What is this?
+
+FILECARVE is a command-line tool that searches through any file and finds other files hidden or embedded inside it — like a PNG image buried inside a ZIP archive, or a PDF tucked inside a binary. It works by recognizing the distinctive byte patterns that mark the beginning and end of common file types, then pulls each one out for you to inspect. This is useful for digital forensics, security analysis, and anyone who needs to examine what is actually inside a suspicious or complex file. No server, no account, and no configuration required — just point it at a file and get instant results.
+<!-- cognis:layman:end -->
+
 ## Contents
 
 - [Why filecarve?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
@@ -45,6 +51,42 @@ Carve embedded files from a blob by magic-byte signatures — without standing u
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="quick-start"></a>
+<!-- cognis:install:start -->
+## Install
+
+`filecarve` is source-available (not published to PyPI) — every method below installs
+straight from GitHub. Pick whichever you prefer; the one-line scripts auto-detect
+the best tool available on your machine.
+
+**One-liner (Linux / macOS):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/cognis-digital/filecarve/HEAD/install.sh | sh
+```
+
+**One-liner (Windows PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/cognis-digital/filecarve/HEAD/install.ps1 | iex
+```
+
+**Or install manually — any one of:**
+```sh
+pipx install "git+https://github.com/cognis-digital/filecarve.git"     # isolated (recommended)
+uv tool install "git+https://github.com/cognis-digital/filecarve.git"  # uv
+pip install "git+https://github.com/cognis-digital/filecarve.git"      # pip
+```
+
+**From source:**
+```sh
+git clone https://github.com/cognis-digital/filecarve.git
+cd filecarve && pip install .
+```
+
+Then run:
+```sh
+filecarve --help
+```
+<!-- cognis:install:end -->
+
 ## Quick start
 
 ```bash

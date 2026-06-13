@@ -14,6 +14,9 @@ import struct
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
+TOOL_NAME = "FILECARVE"
+TOOL_VERSION = "0.1.0"
+
 
 # --- length resolvers -------------------------------------------------------
 # Given the full blob and the start offset of a header, return the carved
