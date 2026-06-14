@@ -152,5 +152,110 @@ class TestCli(unittest.TestCase):
                 self.assertIn("<!doctype html>", fh.read())
 
 
+class TestHardening(unittest.TestCase):
+    """Tests for the hardened input-validation and error-handling paths."""
+
+    # --- core.scan() ---
+
+    def test_scan_wrong_type_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            scan("not bytes")  # type: ignore[arg-type]
+
+    def test_scan_none_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            scan(None)  # type: ignore[arg-type]
+
+    def test_scan_min_size_zero_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            scan(b"\x00", min_size=0)
+
+    def test_scan_min_size_negative_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            scan(b"\xff\xd8\xff" + b"\x00" * 10, min_size=-5)
+
+    def test_scan_bytearray_accepted(self):
+        # bytearray is a valid bytes-like object
+        result = scan(bytearray(b"\x00" * 16))
+        self.assertIsInstance(result, list)
+
+    # --- core.carve() ---
+
+    def test_carve_empty_out_dir_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            carve(b"\x00", "")
+
+    def test_carve_whitespace_out_dir_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            carve(b"\x00", "   ")
+
+    # --- CLI ---
+
+    def test_cli_min_size_zero_exits_2(self):
+        """--min-size 0 is rejected before any I/O (argparse exits with 2)."""
+        fd, path = tempfile.mkstemp()
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(b"\x00" * 8)
+            # argparse raises SystemExit(2) for type-validation errors
+            with self.assertRaises(SystemExit) as ctx:
+                main(["--min-size", "0", "scan", path])
+            self.assertEqual(ctx.exception.code, 2)
+        finally:
+            os.remove(path)
+
+    def test_cli_min_size_negative_exits_2(self):
+        """Negative --min-size is rejected by the argparse type converter."""
+        fd, path = tempfile.mkstemp()
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(b"\x00" * 8)
+            with self.assertRaises(SystemExit) as ctx:
+                main(["--min-size", "-5", "scan", path])
+            self.assertEqual(ctx.exception.code, 2)
+        finally:
+            os.remove(path)
+
+    def test_mcp_server_importable(self):
+        """mcp_server must import without raising (the broken to_json is fixed)."""
+        import importlib
+        mod = importlib.import_module("filecarve.mcp_server")
+        self.assertTrue(callable(mod.serve))
+
+
+class TestWebhook(unittest.TestCase):
+    """Tests for webhook.py input validation (no network required)."""
+
+    def _run_webhook(self, args, stdin_bytes=b"{}"):
+        """Helper: invoke webhook.main() with patched argv and stdin."""
+        import importlib
+        import io
+        wh = importlib.import_module("integrations.webhook")
+        old_argv = sys.argv
+        old_stdin = sys.stdin.buffer
+        sys.argv = ["webhook"] + args
+        sys.stdin = type("_FakeStdin", (), {"buffer": io.BytesIO(stdin_bytes)})()
+        try:
+            return wh.main()
+        finally:
+            sys.argv = old_argv
+            sys.stdin = type("_RestoreStdin", (), {"buffer": old_stdin})()
+
+    def test_bad_url_scheme_exits_2(self):
+        rc = self._run_webhook(["--url", "ftp://example.com"])
+        self.assertEqual(rc, 2)
+
+    def test_empty_stdin_exits_2(self):
+        rc = self._run_webhook(["--url", "https://example.com"], stdin_bytes=b"")
+        self.assertEqual(rc, 2)
+
+    def test_malformed_header_exits_2(self):
+        # Header with no key (starts with colon)
+        rc = self._run_webhook(
+            ["--url", "https://example.com", "--header", ": value"],
+            stdin_bytes=b"{}",
+        )
+        self.assertEqual(rc, 2)
+
+
 if __name__ == "__main__":
     unittest.main()

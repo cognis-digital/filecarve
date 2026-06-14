@@ -150,18 +150,32 @@ def _read_blob(path: str) -> bytes:
         return fh.read()
 
 
+def _positive_int(value: str) -> int:
+    """argparse type converter that rejects non-positive integers."""
+    try:
+        n = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}")
+    if n < 1:
+        raise argparse.ArgumentTypeError(f"must be >= 1, got {n}")
+    return n
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="filecarve",
-        description=f"{TOOL_NAME} — carve embedded files from a blob by magic-byte signatures.",
+        description=(
+            f"{TOOL_NAME} — carve embedded files from a blob"
+            " by magic-byte signatures."
+        ),
     )
     p.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
     p.add_argument("--format", choices=["table", "json", "html"], default="table",
                    help="output format (default: table)")
     p.add_argument("--type", action="append", dest="types", metavar="EXT",
                    help="restrict to extension (repeatable), e.g. --type jpg")
-    p.add_argument("--min-size", type=int, default=1, metavar="N",
-                   help="ignore carves smaller than N bytes")
+    p.add_argument("--min-size", type=_positive_int, default=1, metavar="N",
+                   help="ignore carves smaller than N bytes (default: 1)")
     p.add_argument("-r", "--report", metavar="PATH",
                    help="write the formatted report to PATH instead of stdout")
 
@@ -202,6 +216,12 @@ def main(argv: Optional[list[str]] = None) -> int:
             found = carve(blob, args.out, types=types, min_size=args.min_size)
         else:
             found = scan(blob, types=types, min_size=args.min_size)
+    except ValueError as e:
+        print(f"{TOOL_NAME}: error: {e}", file=sys.stderr)
+        return 2
+    except OSError as e:
+        print(f"{TOOL_NAME}: I/O error: {e}", file=sys.stderr)
+        return 2
     except Exception as e:  # pragma: no cover - defensive
         print(f"{TOOL_NAME}: error: {e}", file=sys.stderr)
         return 2

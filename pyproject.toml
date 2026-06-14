@@ -32,3 +32,9 @@ filecarve = "filecarve.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["filecarve"]
+
+[tool.ruff]
+line-length = 160
+
+[tool.ruff.lint]
+select = ["F", "E"]

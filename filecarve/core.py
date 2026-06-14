@@ -160,9 +160,19 @@ def scan(
     carved we advance past its start to avoid re-reporting nested headers of
     the identical type, while still allowing different types to overlap
     (e.g. a PNG embedded inside a ZIP).
+
+    Raises:
+        TypeError: if ``blob`` is not a :class:`bytes` object.
+        ValueError: if ``min_size`` is less than 1.
     """
+    if not isinstance(blob, (bytes, bytearray)):
+        raise TypeError(
+            f"scan() expects bytes, got {type(blob).__name__}"
+        )
+    if min_size < 1:
+        raise ValueError(f"min_size must be >= 1, got {min_size}")
     sigs = signatures if signatures is not None else SIGNATURES
-    if types:
+    if types is not None:
         sigs = [s for s in sigs if s.ext in types]
 
     results: list[Carved] = []
@@ -216,13 +226,22 @@ def carve(
     """Scan and write carved files to out_dir. Returns the carved list.
 
     Filenames are deterministic: <index>_<offset>.<ext>.
+
+    Raises:
+        TypeError: if ``blob`` is not bytes.
+        ValueError: if ``min_size`` is less than 1 or ``out_dir`` is empty.
+        OSError: if the output directory cannot be created or files cannot
+            be written.
     """
     import os
 
+    if not out_dir or not out_dir.strip():
+        raise ValueError("out_dir must not be empty")
     found = scan(blob, signatures=signatures, types=types, min_size=min_size)
     os.makedirs(out_dir, exist_ok=True)
     for i, c in enumerate(found):
         fname = f"{i:05d}_{c.offset:08x}.{c.ext}"
-        with open(os.path.join(out_dir, fname), "wb") as fh:
+        path = os.path.join(out_dir, fname)
+        with open(path, "wb") as fh:
             fh.write(c.data)
     return found
