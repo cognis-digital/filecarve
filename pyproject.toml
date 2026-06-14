@@ -34,3 +34,6 @@ filecarve = "filecarve.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["filecarve"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
