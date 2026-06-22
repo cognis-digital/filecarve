@@ -78,6 +78,82 @@ def _render_json(found: list[Carved], src: str) -> str:
     return json.dumps(payload, indent=2)
 
 
+_SARIF_LEVEL = {
+    "info": "note",
+    "low": "note",
+    "medium": "warning",
+    "high": "error",
+}
+
+
+def _render_sarif(found: list[Carved], src: str) -> str:
+    """Emit SARIF 2.1.0 so findings flow into code-scanning / CI dashboards.
+
+    Each carved region becomes a result whose ruleId is the file extension
+    (e.g. ``carve/exe``), located at the byte offset within the source blob via
+    an artifactLocation + byteOffset/byteLength region.
+    """
+    # one rule per distinct extension actually present
+    exts = sorted({c.ext for c in found})
+    rules = [
+        {
+            "id": f"carve/{ext}",
+            "name": f"EmbeddedFile_{ext}",
+            "shortDescription": {"text": f"Embedded {ext} file carved by magic-byte signature"},
+            "defaultConfiguration": {
+                "level": _SARIF_LEVEL.get(
+                    next((c.severity for c in found if c.ext == ext), "info"), "note"
+                )
+            },
+        }
+        for ext in exts
+    ]
+
+    results = []
+    for c in found:
+        results.append({
+            "ruleId": f"carve/{c.ext}",
+            "level": _SARIF_LEVEL.get(c.severity, "note"),
+            "message": {
+                "text": (
+                    f"{c.name} carved at offset 0x{c.offset:08x} "
+                    f"({c.size} bytes, method={c.method}"
+                    f"{', truncated' if c.truncated else ''}) sha256={c.sha256}"
+                )
+            },
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": src},
+                    "region": {"byteOffset": c.offset, "byteLength": c.size},
+                }
+            }],
+            "partialFingerprints": {"sha256": c.sha256},
+            "properties": {
+                "severity": c.severity,
+                "method": c.method,
+                "truncated": c.truncated,
+                "ext": c.ext,
+            },
+        })
+
+    sarif = {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [{
+            "tool": {
+                "driver": {
+                    "name": TOOL_NAME,
+                    "version": TOOL_VERSION,
+                    "informationUri": "https://github.com/cognis-digital/filecarve",
+                    "rules": rules,
+                }
+            },
+            "results": results,
+        }],
+    }
+    return json.dumps(sarif, indent=2)
+
+
 def _render_html(found: list[Carved], src: str) -> str:
     counts: dict[str, int] = {}
     for c in found:
@@ -150,27 +226,35 @@ def _read_blob(path: str) -> bytes:
         return fh.read()
 
 
+def _add_shared(target: argparse.ArgumentParser) -> None:
+    """Shared options usable both before and after the subcommand."""
+    target.add_argument("--format", choices=["table", "json", "sarif", "html"],
+                        default=None,
+                        help="output format (default: table)")
+    target.add_argument("--type", action="append", dest="types", metavar="EXT",
+                        help="restrict to extension (repeatable), e.g. --type jpg")
+    target.add_argument("--min-size", type=int, default=None, metavar="N",
+                        help="ignore carves smaller than N bytes")
+    target.add_argument("-r", "--report", metavar="PATH", default=None,
+                        help="write the formatted report to PATH instead of stdout")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="filecarve",
         description=f"{TOOL_NAME} — carve embedded files from a blob by magic-byte signatures.",
     )
     p.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
-    p.add_argument("--format", choices=["table", "json", "html"], default="table",
-                   help="output format (default: table)")
-    p.add_argument("--type", action="append", dest="types", metavar="EXT",
-                   help="restrict to extension (repeatable), e.g. --type jpg")
-    p.add_argument("--min-size", type=int, default=1, metavar="N",
-                   help="ignore carves smaller than N bytes")
-    p.add_argument("-r", "--report", metavar="PATH",
-                   help="write the formatted report to PATH instead of stdout")
+    _add_shared(p)
 
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sp_scan = sub.add_parser("scan", help="list carved candidates (writes no files)")
+    _add_shared(sp_scan)
     sp_scan.add_argument("blob", help="input file, or - for stdin")
 
     sp_carve = sub.add_parser("carve", help="carve and write files to a directory")
+    _add_shared(sp_carve)
     sp_carve.add_argument("blob", help="input file, or - for stdin")
     sp_carve.add_argument("-o", "--out", required=True, metavar="DIR",
                           help="output directory for carved files")
@@ -179,9 +263,27 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[list[str]] = None) -> int:
     parser = build_parser()
+    # Shared options may appear before OR after the subcommand. argparse parses
+    # the subparser second, so a value given in the *parent* position is later
+    # clobbered by the subparser default (None). We recover the parent value by
+    # parsing it standalone first, then merge: subcommand position wins, else
+    # fall back to the parent-position value.
+    pre = argparse.ArgumentParser(add_help=False)
+    _add_shared(pre)
+    parent_ns, _ = pre.parse_known_args(argv)
+
     args = parser.parse_args(argv)
 
-    types = set(t.lower() for t in args.types) if args.types else None
+    def pick(name):
+        sub_val = getattr(args, name, None)
+        return sub_val if sub_val is not None else getattr(parent_ns, name, None)
+
+    fmt = pick("format") or "table"
+    _ms = pick("min_size")
+    min_size = _ms if _ms is not None else 1
+    report = pick("report")
+    _types = pick("types")
+    types = set(t.lower() for t in _types) if _types else None
 
     try:
         blob = _read_blob(args.blob)
@@ -191,33 +293,35 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     try:
         if args.cmd == "carve":
-            found = carve(blob, args.out, types=types, min_size=args.min_size)
+            found = carve(blob, args.out, types=types, min_size=min_size)
         else:
-            found = scan(blob, types=types, min_size=args.min_size)
+            found = scan(blob, types=types, min_size=min_size)
     except Exception as e:  # pragma: no cover - defensive
         print(f"{TOOL_NAME}: error: {e}", file=sys.stderr)
         return 2
 
     src = args.blob if args.blob != "-" else "<stdin>"
-    if args.format == "json":
+    if fmt == "json":
         out = _render_json(found, src)
-    elif args.format == "html":
+    elif fmt == "sarif":
+        out = _render_sarif(found, src)
+    elif fmt == "html":
         out = _render_html(found, src)
     else:
         out = _render_table(found, src)
 
-    if args.report:
+    if report:
         try:
-            with open(args.report, "w", encoding="utf-8") as fh:
+            with open(report, "w", encoding="utf-8") as fh:
                 fh.write(out)
         except OSError as e:
-            print(f"{TOOL_NAME}: cannot write report {args.report}: {e}", file=sys.stderr)
+            print(f"{TOOL_NAME}: cannot write report {report}: {e}", file=sys.stderr)
             return 2
-        print(f"{TOOL_NAME}: report written to {args.report} ({len(found)} finding(s))")
+        print(f"{TOOL_NAME}: report written to {report} ({len(found)} finding(s))")
     else:
         print(out)
 
-    if args.cmd == "carve" and not args.report:
+    if args.cmd == "carve" and not report:
         print(f"\nCarved {len(found)} file(s) to {args.out}", file=sys.stderr)
 
     # non-zero exit when findings present (pipeline-friendly)

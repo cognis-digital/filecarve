@@ -10,9 +10,29 @@ Nothing here touches the network. All logic is real and self-contained.
 from __future__ import annotations
 
 import hashlib
+import os
 import struct
 from dataclasses import dataclass, field
 from typing import Callable, Optional
+
+TOOL_NAME = "FILECARVE"
+
+
+def _read_version() -> str:
+    # Single source of truth: the VERSION file at the repo root.
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidate = os.path.join(os.path.dirname(here), "VERSION")
+    try:
+        with open(candidate, "r", encoding="utf-8") as fh:
+            v = fh.read().strip()
+            if v:
+                return v
+    except OSError:
+        pass
+    return "0.0.0"
+
+
+TOOL_VERSION = _read_version()
 
 
 # --- length resolvers -------------------------------------------------------
@@ -37,6 +57,26 @@ def _len_riff(blob: bytes, start: int) -> Optional[int]:
     total = size + 8
     if 8 < total <= (len(blob) - start):
         return total
+    return None
+
+
+def _len_zip(blob: bytes, start: int) -> Optional[int]:
+    # A ZIP ends at its End-Of-Central-Directory (EOCD) record: signature
+    # PK\x05\x06, then 18 fixed bytes, then a 2-byte comment length and the
+    # comment itself. The footer signature alone (4 bytes) cuts the record short
+    # and produces a corrupt archive, so resolve the FULL EOCD length here.
+    eocd_sig = b"PK\x05\x06"
+    # Find the last EOCD at/after this header so nested/appended entries are
+    # included (ZIP central directory is at the end of the archive).
+    idx = blob.rfind(eocd_sig, start)
+    if idx == -1:
+        return None
+    if idx + 22 > len(blob):
+        return None
+    comment_len = struct.unpack_from("<H", blob, idx + 20)[0]
+    end = idx + 22 + comment_len
+    if end <= len(blob) and end > start:
+        return end - start
     return None
 
 
@@ -105,7 +145,8 @@ SIGNATURES: list[Signature] = [
     Signature("PDF document", "pdf", b"%PDF-", footer=b"%%EOF",
               footer_inclusive=True, severity="medium"),
     Signature("ZIP / Office / JAR", "zip", b"PK\x03\x04",
-              footer=b"PK\x05\x06", footer_inclusive=True, severity="medium"),
+              footer=b"PK\x05\x06", footer_inclusive=True,
+              length_fn=_len_zip, severity="medium"),
     Signature("GZIP stream", "gz", b"\x1f\x8b\x08", severity="medium"),
     Signature("RAR archive", "rar", b"Rar!\x1a\x07\x00", severity="high"),
     Signature("RAR5 archive", "rar", b"Rar!\x1a\x07\x01\x00", severity="high"),

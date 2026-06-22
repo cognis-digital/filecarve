@@ -45,7 +45,14 @@ filecarve scan .            # → prioritized findings in seconds
 
    ```bash
    filecarve --format json scan disk.img > carves.json
-   filecarve --format html -r report.html scan disk.img
+   filecarve --format sarif scan disk.img > carves.sarif   # code-scanning / CI
+   filecarve --format html -r report.html scan disk.img     # shareable report
+   ```
+
+   Global flags also work **after** the subcommand:
+
+   ```bash
+   filecarve scan disk.img --format sarif -r carves.sarif
    ```
 
 5. **Automate in a pipeline** — inventory embedded files from an artifact:
@@ -56,7 +63,7 @@ filecarve scan .            # → prioritized findings in seconds
 
 ## Contents
 
-- [Why filecarve?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
+- [Why filecarve?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Demos](#demos) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
 
 <a name="why"></a>
 ## Why filecarve?
@@ -70,9 +77,14 @@ Carve embedded files from a blob by magic-byte signatures — without standing u
 <a name="features"></a>
 ## Features
 
-- ✅ Sha256 Of
-- ✅ Scan
-- ✅ Carve
+- ✅ **Scan** a blob and list embedded files by magic-byte signature (writes nothing)
+- ✅ **Carve** the embedded files out to a directory — byte-exact where the format allows
+- ✅ 16 built-in signatures: jpg · png · gif · bmp · pdf · zip/office/jar · gz · rar · 7z · elf · exe · riff (wav/avi/webp) · sqlite · pcap
+- ✅ Smart end-detection: **footer**, header-derived **length** (BMP/RIFF/GIF/**ZIP**), or a bounded fallback that flags possible truncation
+- ✅ Valid-archive ZIP carving — the full End-Of-Central-Directory record (incl. comment) is included, so carved `.zip`/Office/JAR files re-open cleanly
+- ✅ Output as **table · JSON · SARIF 2.1.0 · HTML** — each carve carries an offset, size, SHA-256, severity hint and end-detection method
+- ✅ Global flags work **before or after** the subcommand (`--format`, `--type`, `--min-size`, `-r/--report`)
+- ✅ Pipeline-friendly exit codes (0 = clean, 1 = findings, 2 = error) + stdin (`-`) support
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 
@@ -101,6 +113,40 @@ $ filecarve scan .
 
   2 findings · risk score 5 · 38ms
 ```
+
+<div align="right"><a href="#top">↑ back to top</a></div>
+
+<a name="demos"></a>
+## Demos — real-use-case walkthroughs
+
+Each folder under [`demos/`](demos/) ships a **regenerable input artifact** (a
+deterministic `make_demo.py`, stdlib-only) plus a `SCENARIO.md` explaining where
+the data came from, the exact command to run, what to expect, and how to act on
+the findings. All artifacts use real, documented file-format magic bytes — no
+fabricated identifiers. Each is verified by the test suite.
+
+| Demo | Scenario | Demonstrates |
+|---|---|---|
+| [`01-basic`](demos/01-basic/) | Mixed blob with PNG/PDF/ZIP/GZIP concatenated | The fundamentals: scan → carve → report |
+| [`04-memory-dump`](demos/04-memory-dump/) | Recover files resident in a process memory dump | PNG + ZIP + inert PE/EXE; severity triage |
+| [`05-firmware-image`](demos/05-firmware-image/) | Inventory an IoT/router firmware image | GIF + GZIP + SQLite + ELF across `0xFF` erase-padding |
+| [`06-pcap-exfil`](demos/06-pcap-exfil/) | Carve files transferred inside a packet capture | PCAP container + reassembled JPEG & PDF; SARIF out |
+| [`07-polyglot-file`](demos/07-polyglot-file/) | Detect a JPEG+ZIP polyglot (hidden archive) | Two regions in one "image"; **valid** extracted zip |
+| [`08-unallocated-space`](demos/08-unallocated-space/) | Carve deleted images from unallocated disk space | GIF + BMP, both **length**-resolved (byte-exact) |
+| [`09-email-attachments`](demos/09-email-attachments/) | Pull attachments out of a mail spool | Invoice PDF + photo PNG, no MIME parser needed |
+| [`10-truncated-tail`](demos/10-truncated-tail/) | Honest handling of a truncated acquisition | Footer-less PNG → `method=bounded`, flagged incomplete |
+
+```bash
+# Run any demo end to end
+python -m filecarve scan demos/07-polyglot-file/photo.jpg
+python -m filecarve carve demos/07-polyglot-file/photo.jpg -o extracted
+
+# Regenerate an artifact deterministically
+python demos/07-polyglot-file/make_demo.py
+```
+
+> All demos are **defensive / authorized-use** forensics: analyze artifacts you
+> own or are authorized to examine.
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
