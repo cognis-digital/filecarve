@@ -63,7 +63,7 @@ filecarve scan .            # → prioritized findings in seconds
 
 ## Contents
 
-- [Why filecarve?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Demos](#demos) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
+- [Why filecarve?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Demos](#demos) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Edge / air-gap](#edge) · [Scope & safety](#scope) · [Related](#related) · [Contributing](#contributing)
 
 <a name="why"></a>
 ## Why filecarve?
@@ -86,7 +86,8 @@ Carve embedded files from a blob by magic-byte signatures — without standing u
 - ✅ Global flags work **before or after** the subcommand (`--format`, `--type`, `--min-size`, `-r/--report`)
 - ✅ Pipeline-friendly exit codes (0 = clean, 1 = findings, 2 = error) + stdin (`-`) support
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
-- ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
+- ✅ **Passive / offline by design** — reads only the file (or stdin) you give it; never opens a network socket
+- ✅ Carving ports in Python (reference), JavaScript/Node, Go, and Rust under [`ports/`](ports/) — all mirror the `scan` command and the JSON shape, verified byte-for-byte against the demo artifacts
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
@@ -96,22 +97,66 @@ Carve embedded files from a blob by magic-byte signatures — without standing u
 ```bash
 pip install cognis-filecarve
 filecarve --version
-filecarve scan .                       # scan current project
-filecarve scan . --format json         # machine-readable
-filecarve scan . --fail-on high        # CI gate (non-zero exit)
+filecarve scan disk.img                    # preview carve candidates (writes nothing)
+filecarve scan disk.img --format json      # machine-readable inventory
+filecarve scan disk.img --format sarif      # code-scanning / CI ingestion
+filecarve carve disk.img -o carved/         # write the embedded files out
 ```
+
+> Exit codes are pipeline-friendly: **`0`** = no embedded files found,
+> **`1`** = findings present, **`2`** = read/IO error. Gate a CI job on a clean
+> acquisition with `filecarve scan artifact && echo OK`.
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="example"></a>
-## Example
+## Example — real output
+
+Carving the committed polyglot demo (a JPEG with a ZIP archive appended — a
+classic way to smuggle data past an "it's just a photo" check):
 
 ```text
-$ filecarve scan .
-  [HIGH    ] FIL-001  example finding             (./src/app.py)
-  [MEDIUM  ] FIL-002  another signal              (./config.yaml)
+$ filecarve scan demos/07-polyglot-file/photo.jpg
+FILECARVE 0.6.6 — source: demos/07-polyglot-file/photo.jpg
 
-  2 findings · risk score 5 · 38ms
+  #      OFFSET       SIZE  SEV     METHOD   EXT    NAME
+  ----------------------------------------------------------------------
+  0  0x00000000        46B  low     footer   jpg    JPEG image
+  1  0x0000002e       157B  medium  length   zip    ZIP / Office / JAR
+
+2 file(s) carved  [low=1, medium=1]  (* = bounded/truncated)
+```
+
+The same scan as JSON — every carve carries a byte `offset`, `size`, `sha256`,
+a `severity` triage hint, and the `method` used to find the file's end
+(`footer` · `length` · `bounded`):
+
+```bash
+$ filecarve scan demos/07-polyglot-file/photo.jpg --format json
+```
+```json
+{
+  "tool": "FILECARVE",
+  "version": "0.6.6",
+  "source": "demos/07-polyglot-file/photo.jpg",
+  "total": 2,
+  "severity_counts": { "low": 1, "medium": 1 },
+  "findings": [
+    { "name": "JPEG image", "ext": "jpg", "offset": 0, "size": 46,
+      "sha256": "ad8bfb2b…3114", "severity": "low", "method": "footer", "truncated": false },
+    { "name": "ZIP / Office / JAR", "ext": "zip", "offset": 46, "size": 157,
+      "sha256": "781a90dc…18ee", "severity": "medium", "method": "length", "truncated": false }
+  ]
+}
+```
+
+The carved `.zip` re-opens cleanly — filecarve includes the full
+End-Of-Central-Directory record (and any archive comment), so the extracted
+archive is byte-valid, not a corrupt fragment:
+
+```bash
+$ filecarve carve demos/07-polyglot-file/photo.jpg -o extracted/
+$ unzip -l extracted/00001_0000002e.zip      # the hidden archive, intact
 ```
 
 <div align="right"><a href="#top">↑ back to top</a></div>
@@ -153,11 +198,26 @@ python demos/07-polyglot-file/make_demo.py
 <a name="architecture"></a>
 ## Architecture
 
+`filecarve` is a single-pass, read-only signature carver. For each of the 16
+built-in signatures it scans the blob for the magic-byte **header**, then
+resolves the file's **end** by the most precise method available — a known
+**footer** (JPEG/PNG/PDF), a **length** computed from the file's own header
+(BMP/RIFF/GIF/ZIP-EOCD), or a **bounded** fallback that caps the carve and flags
+it as possibly truncated. Each region is hashed (SHA-256), severity-tagged, and
+emitted as table / JSON / SARIF / HTML.
+
 ```mermaid
 flowchart LR
-  IN[disk / memory artifact] --> P[filecarve<br/>parse]
-  P --> OUT[timeline + IOCs]
+  IN[disk image · memory dump · firmware · pcap · mail spool] --> H[match magic-byte headers<br/>16 signatures]
+  H --> E{resolve end}
+  E -->|footer| C[carve region]
+  E -->|header length| C
+  E -->|bounded fallback| C
+  C --> S[sha256 + severity + method]
+  S --> OUT[table · JSON · SARIF 2.1.0 · HTML]
 ```
+
+Nothing in the carve path opens a socket — see [Scope & safety](#scope) below.
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
@@ -212,6 +272,46 @@ curl -fsSL https://raw.githubusercontent.com/cognis-digital/filecarve/main/insta
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
+<a name="edge"></a>
+## Edge / air-gap
+
+`filecarve` is **stdlib-only** (Python ≥ 3.10) with **no runtime dependencies** —
+it drops onto disconnected, field, or classified gear and runs unchanged. The
+carve path performs **no network I/O whatsoever**: it reads the artifact (or
+stdin), carves in memory, and writes results to disk. The Rust port ships its
+own dependency-free SHA-256 so `cargo build` needs no registry access, and the
+JS/Go ports use only their standard libraries — so every port builds and runs
+air-gapped too.
+
+To move a carving capability into an enclave: copy the repo (or
+`pip install .` into a venv) onto removable media, transfer, and run. No feed
+refresh, license check, or callback is ever attempted.
+
+> filecarve consumes **no** vulnerability or threat-intelligence feeds — it
+> matches file-format magic bytes only — so there is no data DB to refresh and
+> nothing goes stale offline.
+
+<div align="right"><a href="#top">↑ back to top</a></div>
+
+<a name="scope"></a>
+## Scope & safety
+
+- **Defensive / authorized-use forensics only.** Carve artifacts you own or are
+  explicitly authorized to examine (your own disk images, memory dumps, firmware,
+  captures, mail spools, incident-response evidence).
+- **Passive and read-only.** filecarve never modifies the input, never performs
+  active scanning, and never opens a network socket. There are no exploit
+  payloads, no auth-bypass logic, and no "attack" surface — it is a parser.
+- **No fabricated identifiers.** Every signature is a real, publicly-documented
+  file-format magic-byte sequence; demo artifacts are generated deterministically
+  by their `make_demo.py` from those real magic bytes (no invented CVEs, hashes,
+  or fingerprints).
+- **Honest truncation.** When a file's end can't be determined from a footer or
+  header length, filecarve uses a bounded fallback and flags the carve
+  `truncated` rather than guessing — so downstream analysts aren't misled.
+
+<div align="right"><a href="#top">↑ back to top</a></div>
+
 <a name="related"></a>
 ## Related Cognis tools
 
@@ -229,7 +329,7 @@ PRs, new rules, and demo scenarios are welcome under the collaboration-pull mode
 
 ## Interoperability
 
-`{}` composes with the 300+ tool Cognis suite — JSON in/out and a shared
+`filecarve` composes with the 300+ tool Cognis suite — JSON in/out and a shared
 OpenAI-compatible `/v1` backbone. See **[INTEROP.md](INTEROP.md)** for the
 suite map, composition patterns, and reference stacks.
 

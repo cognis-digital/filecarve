@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cognis-filecarve"
-version = "0.1.1"
+version = "0.6.6"
 description = "Carve embedded files from a blob by magic-byte signatures"
 authors = [{name = "Cognis Digital", email = "suite@cognis.digital"}]
 license = {text = "LicenseRef-COCL-1.0"}

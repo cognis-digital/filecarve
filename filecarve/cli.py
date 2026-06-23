@@ -258,6 +258,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp_carve.add_argument("blob", help="input file, or - for stdin")
     sp_carve.add_argument("-o", "--out", required=True, metavar="DIR",
                           help="output directory for carved files")
+
+    sub.add_parser("mcp", help="run as an MCP stdio server (needs the [mcp] extra)")
     return p
 
 
@@ -273,6 +275,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     parent_ns, _ = pre.parse_known_args(argv)
 
     args = parser.parse_args(argv)
+
+    if args.cmd == "mcp":
+        from .mcp_server import serve
+        return serve()
 
     def pick(name):
         sub_val = getattr(args, name, None)

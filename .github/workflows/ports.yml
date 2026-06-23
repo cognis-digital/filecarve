@@ -1,0 +1,54 @@
+name: ports
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Smoke + unit tests
+        working-directory: ports/javascript
+        run: node --test
+      - name: CLI runs and carves a demo
+        run: |
+          node ports/javascript/index.js scan demos/07-polyglot-file/photo.jpg
+          test $? -eq 1   # findings present -> exit 1
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: Vet + build + test
+        working-directory: ports/go
+        run: |
+          go vet ./...
+          go build -o /tmp/filecarve-go .
+          go test ./...
+      - name: CLI runs and carves a demo
+        run: |
+          cd ports/go && go build -o /tmp/fc .
+          /tmp/fc scan ../../demos/07-polyglot-file/photo.jpg && rc=0 || rc=$?
+          test "$rc" -eq 1
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build + test
+        working-directory: ports/rust
+        run: |
+          cargo build --release
+          cargo test
+      - name: CLI runs and carves a demo
+        working-directory: ports/rust
+        run: |
+          cargo run --release -- scan ../../demos/07-polyglot-file/photo.jpg && rc=0 || rc=$?
+          test "$rc" -eq 1
