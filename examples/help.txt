@@ -1,0 +1,22 @@
+$ filecarve-emit --help
+
+usage: filecarve [-h] [--version] [--format {table,json,sarif,html}]
+                 [--type EXT] [--min-size N] [-r PATH]
+                 {scan,carve,mcp} ...
+
+FILECARVE — carve embedded files from a blob by magic-byte signatures.
+
+positional arguments:
+  {scan,carve,mcp}
+    scan                list carved candidates (writes no files)
+    carve               carve and write files to a directory
+    mcp                 run as an MCP stdio server (needs the [mcp] extra)
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json,sarif,html}
+                        output format (default: table)
+  --type EXT            restrict to extension (repeatable), e.g. --type jpg
+  --min-size N          ignore carves smaller than N bytes
+  -r, --report PATH     write the formatted report to PATH instead of stdout

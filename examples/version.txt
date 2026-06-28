@@ -1,0 +1,3 @@
+$ filecarve-emit --version
+
+FILECARVE 0.6.6

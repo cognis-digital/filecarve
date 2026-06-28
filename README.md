@@ -20,6 +20,69 @@ pip install cognis-filecarve
 filecarve scan .            # → prioritized findings in seconds
 ```
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ filecarve-emit --version
+FILECARVE 0.6.6
+```
+
+```console
+$ filecarve-emit --help
+usage: filecarve [-h] [--version] [--format {table,json,sarif,html}]
+                 [--type EXT] [--min-size N] [-r PATH]
+                 {scan,carve,mcp} ...
+
+FILECARVE — carve embedded files from a blob by magic-byte signatures.
+
+positional arguments:
+  {scan,carve,mcp}
+    scan                list carved candidates (writes no files)
+    carve               carve and write files to a directory
+    mcp                 run as an MCP stdio server (needs the [mcp] extra)
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json,sarif,html}
+                        output format (default: table)
+  --type EXT            restrict to extension (repeatable), e.g. --type jpg
+  --min-size N          ignore carves smaller than N bytes
+  -r, --report PATH     write the formatted report to PATH instead of stdout
+```
+
+> Blocks above are real `filecarve` output — reproduce them from a clone.
+
+**Sample result format** _(illustrative values — run on your own data for real findings):_
+
+```
+{
+"Findings": [
+    {
+        "id": "123456",
+        "title": "Suspicious File",
+        "description": "A file was found that may be malicious.",
+        "mitre_attack_id": ["T1003"],
+        "threat_actor": null,
+        "objects": [
+            {
+                "id": "obj1",
+                "type": "file",
+                "name": "/path/to/file.txt",
+                "size": 1024
+            }
+        ]
+    }
+]
+}
+```
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 1. **Install** the CLI:
