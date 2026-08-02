@@ -1,0 +1,112 @@
+[2026-07-31 11:06:03] === enhance · filecarve · words=120000 loc>=10000 langs=9 push=True ===
+[2026-07-31 11:06:07] phase DOCS — longform 120000-word corpus -> docs/corpus/
+[2026-08-01 09:50:29] phase POLYGLOT — expanding to >= 10000 LOC across 9 languages
+[2026-08-01 10:20:46]   ask(plan/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 10:21:21]   facets: ['signature_scanning', 'file_carving', 'memory_dump_analysis', 'disk_image_processing', 'signature_database_management', 'quick_forensic_report']
+[2026-08-01 10:51:38]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 10:58:05]   +polyglot/python/signature_scanning.py  (loc now ~3642)
+[2026-08-01 11:28:22]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 12:09:02]   ask(code/uncensored) error: slot on :8774 unreachable after 4 tries: timed out
+[2026-08-01 12:39:20]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 12:43:25]   +polyglot/rust/signature_scanning.rs  (loc now ~3697)
+[2026-08-01 13:13:44]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 13:32:50]   +polyglot/typescript/signature_scanning.ts  (loc now ~3782)
+[2026-08-01 14:03:09]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 14:32:55]   +polyglot/c/signature_scanning.c  (loc now ~3901)
+[2026-08-01 15:03:14]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 15:07:31]   +polyglot/cpp/signature_scanning.cpp  (loc now ~3972)
+[2026-08-01 15:37:48]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 15:45:00]   +polyglot/java/signature_scanning.java  (loc now ~4048)
+[2026-08-01 16:15:18]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 16:19:06]   +polyglot/ruby/signature_scanning.rb  (loc now ~4122)
+[2026-08-01 16:49:23]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 16:55:55]   +polyglot/csharp/signature_scanning.cs  (loc now ~4253)
+[2026-08-01 17:26:13]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 17:30:26]   +polyglot/python/file_carving.py  (loc now ~4316)
+[2026-08-01 18:00:43]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 18:19:54]   +polyglot/go/file_carving.go  (loc now ~4380)
+[2026-08-01 18:20:02]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 18:48:45]   +polyglot/rust/file_carving.rs  (loc now ~4431)
+[2026-08-01 18:48:55]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 19:09:01]   +polyglot/typescript/file_carving.ts  (loc now ~4535)
+[2026-08-01 19:09:07]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 19:25:52]   +polyglot/c/file_carving.c  (loc now ~4627)
+[2026-08-01 19:25:58]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 19:34:13]   +polyglot/cpp/file_carving.cpp  (loc now ~4730)
+[2026-08-01 19:34:19]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 19:42:23]   +polyglot/java/file_carving.java  (loc now ~4844)
+[2026-08-01 19:42:29]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 19:48:31]   +polyglot/ruby/file_carving.rb  (loc now ~4944)
+[2026-08-01 19:48:36]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 19:56:26]   +polyglot/csharp/file_carving.cs  (loc now ~5059)
+[2026-08-01 19:56:31]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:04:54]   +polyglot/python/memory_dump_analysis.py  (loc now ~5153)
+[2026-08-01 20:05:00]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:08:58]   +polyglot/go/memory_dump_analysis.go  (loc now ~5224)
+[2026-08-01 20:09:04]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:12:26]   +polyglot/rust/memory_dump_analysis.rs  (loc now ~5275)
+[2026-08-01 20:12:32]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:19:21]   +polyglot/typescript/memory_dump_analysis.ts  (loc now ~5387)
+[2026-08-01 20:19:26]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:25:19]   +polyglot/c/memory_dump_analysis.c  (loc now ~5490)
+[2026-08-01 20:25:25]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:31:52]   +polyglot/cpp/memory_dump_analysis.cpp  (loc now ~5567)
+[2026-08-01 20:31:58]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:42:02]   +polyglot/java/memory_dump_analysis.java  (loc now ~5673)
+[2026-08-01 20:42:08]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:47:34]   +polyglot/ruby/memory_dump_analysis.rb  (loc now ~5762)
+[2026-08-01 20:47:40]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:53:24]   +polyglot/csharp/memory_dump_analysis.cs  (loc now ~5855)
+[2026-08-01 20:53:29]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 20:58:20]   +polyglot/python/disk_image_processing.py  (loc now ~5927)
+[2026-08-01 20:58:26]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:04:13]   +polyglot/go/disk_image_processing.go  (loc now ~6045)
+[2026-08-01 21:04:19]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:14:17]   +polyglot/rust/disk_image_processing.rs  (loc now ~6167)
+[2026-08-01 21:14:23]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:19:53]   +polyglot/typescript/disk_image_processing.ts  (loc now ~6258)
+[2026-08-01 21:19:59]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:25:45]   +polyglot/c/disk_image_processing.c  (loc now ~6351)
+[2026-08-01 21:25:50]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:31:32]   +polyglot/cpp/disk_image_processing.cpp  (loc now ~6438)
+[2026-08-01 21:31:38]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:41:37]   +polyglot/java/disk_image_processing.java  (loc now ~6545)
+[2026-08-01 21:41:43]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 21:45:31]   +polyglot/ruby/disk_image_processing.rb  (loc now ~6600)
+[2026-08-01 21:45:36]   ask(code/omnicoder) error: Ollama HTTP 503: {"error":"server busy, please try again.  maximum pending requests exceeded"} — falling back to fleet
+[2026-08-01 22:03:52]   +polyglot/csharp/disk_image_processing.cs  (loc now ~6712)
+[2026-08-01 22:34:10]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 22:37:13]   +polyglot/python/signature_database_management.py  (loc now ~6774)
+[2026-08-01 23:07:30]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-01 23:48:14]   ask(code/uncensored) error: slot on :8774 unreachable after 4 tries: timed out
+[2026-08-02 00:18:37]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 00:28:25]   +polyglot/rust/signature_database_management.rs  (loc now ~6873)
+[2026-08-02 00:58:45]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 01:39:34]   ask(code/uncensored) error: slot on :8774 unreachable after 4 tries: timed out
+[2026-08-02 02:09:58]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 02:16:03]   +polyglot/c/signature_database_management.c  (loc now ~6971)
+[2026-08-02 02:46:23]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 02:53:27]   +polyglot/cpp/signature_database_management.cpp  (loc now ~7055)
+[2026-08-02 03:23:46]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 03:30:57]   +polyglot/java/signature_database_management.java  (loc now ~7149)
+[2026-08-02 04:01:16]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 04:05:57]   +polyglot/ruby/signature_database_management.rb  (loc now ~7239)
+[2026-08-02 04:36:15]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 04:53:17]   +polyglot/csharp/signature_database_management.cs  (loc now ~7378)
+[2026-08-02 05:23:36]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 05:30:42]   +polyglot/python/quick_forensic_report.py  (loc now ~7449)
+[2026-08-02 06:01:02]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 06:06:26]   +polyglot/go/quick_forensic_report.go  (loc now ~7527)
+[2026-08-02 06:36:45]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 06:40:28]   +polyglot/rust/quick_forensic_report.rs  (loc now ~7576)
+[2026-08-02 07:10:47]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 07:18:27]   +polyglot/typescript/quick_forensic_report.ts  (loc now ~7716)
+[2026-08-02 07:48:46]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 07:56:04]   +polyglot/c/quick_forensic_report.c  (loc now ~7820)
+[2026-08-02 08:26:22]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 08:45:59]   +polyglot/cpp/quick_forensic_report.cpp  (loc now ~7917)
+[2026-08-02 08:55:35]   +polyglot/java/quick_forensic_report.java  (loc now ~8165)
+[2026-08-02 09:25:54]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 09:31:02]   +polyglot/ruby/quick_forensic_report.rb  (loc now ~8241)
+[2026-08-02 10:01:21]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
+[2026-08-02 10:16:44]   +polyglot/csharp/quick_forensic_report.cs  (loc now ~8326)
