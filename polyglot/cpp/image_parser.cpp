@@ -1,0 +1,317 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <memory>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+// ============================================================================
+// Constants and Magic Bytes
+// ============================================================================
+
+namespace {
+
+constexpr uint64_t kRawMagic = 0x00000000; // Raw/forensic raw = no magic
+constexpr uint64_t kE01Magic = 0x50414D45; // "PAME" (E01 header)
+constexpr uint64_t kAFFMagic = 0x41464646; // "AFF" (AFF4 header)
+constexpr uint64_t kRawMagicBytes[4] = {0x52, 0x41, 0x57, 0x00}; // "RAW"
+
+constexpr size_t kE01HeaderSize = 1024;
+constexpr size_t kAFF4HeaderSize = 4096;
+
+// E01 header structure
+struct E01Header {
+    char magic[4];
+    uint32_t version;
+    uint32_t flags;
+    uint32_t image_size;
+    uint32_t offset;
+    uint32_t partition;
+    uint32_t partition_size;
+    uint32_t partition_offset;
+    uint32_t partition_flags;
+    uint32_t reserved;
+    uint32_t created;
+    uint32_t modified;
+    uint32_t acquired;
+    uint32_t acquired_by;
+    uint32_t acquired_by_name[32];
+    uint32_t acquired_by_name_len;
+    uint32_t acquired_by_name_offset;
+    uint32_t acquired_by_name_size;
+    uint32_t acquired_by_name_flags;
+    uint32_t acquired_by_name_offset2;
+    uint32_t acquired_by_name_size2;
+    uint32_t acquired_by_name_flags2;
+    uint32_t acquired_by_name_offset3;
+    uint32_t acquired_by_name_size3;
+    uint32_t acquired_by_name_flags3;
+    uint32_t acquired_by_name_offset4;
+    uint32_t acquired_by_name_size4;
+    uint32_t acquired_by_name_flags4;
+    uint32_t acquired_by_name_offset5;
+    uint32_t acquired_by_name_size5;
+    uint32_t acquired_by_name_flags5;
+    uint32_t acquired_by_name_offset6;
+    uint32_t acquired_by_name_size6;
+    uint32_t acquired_by_name_flags6;
+    uint32_t acquired_by_name_offset7;
+    uint32_t acquired_by_name_size7;
+    uint32_t acquired_by_name_flags7;
+    uint32_t acquired_by_name_offset8;
+    uint32_t acquired_by_name_size8;
+    uint32_t acquired_by_name_flags8;
+    uint32_t acquired_by_name_offset9;
+    uint32_t acquired_by_name_size9;
+    uint32_t acquired_by_name_flags9;
+    uint32_t acquired_by_name_offset10;
+    uint32_t acquired_by_name_size10;
+    uint32_t acquired_by_name_flags10;
+    uint32_t acquired_by_name_offset11;
+    uint32_t acquired_by_name_size11;
+    uint32_t acquired_by_name_flags11;
+    uint32_t acquired_by_name_offset12;
+    uint32_t acquired_by_name_size12;
+    uint32_t acquired_by_name_flags12;
+    uint32_t acquired_by_name_offset13;
+    uint32_t acquired_by_name_size13;
+    uint32_t acquired_by_name_flags13;
+    uint32_t acquired_by_name_offset14;
+    uint32_t acquired_by_name_size14;
+    uint32_t acquired_by_name_flags14;
+    uint32_t acquired_by_name_offset15;
+    uint32_t acquired_by_name_size15;
+    uint32_t acquired_by_name_flags15;
+    uint32_t acquired_by_name_offset16;
+    uint32_t acquired_by_name_size16;
+    uint32_t acquired_by_name_flags16;
+    uint32_t acquired_by_name_offset17;
+    uint32_t acquired_by_name_size17;
+    uint32_t acquired_by_name_flags17;
+    uint32_t acquired_by_name_offset18;
+    uint32_t acquired_by_name_size18;
+    uint32_t acquired_by_name_flags18;
+    uint32_t acquired_by_name_offset19;
+    uint32_t acquired_by_name_size19;
+    uint32_t acquired_by_name_flags19;
+    uint32_t acquired_by_name_offset20;
+    uint32_t acquired_by_name_size20;
+    uint32_t acquired_by_name_flags20;
+    uint32_t acquired_by_name_offset21;
+    uint32_t acquired_by_name_size21;
+    uint32_t acquired_by_name_flags21;
+    uint32_t acquired_by_name_offset22;
+    uint32_t acquired_by_name_size22;
+    uint32_t acquired_by_name_flags22;
+    uint32_t acquired_by_name_offset23;
+    uint32_t acquired_by_name_size23;
+    uint32_t acquired_by_name_flags23;
+    uint32_t acquired_by_name_offset24;
+    uint32_t acquired_by_name_size24;
+    uint32_t acquired_by_name_flags24;
+    uint32_t acquired_by_name_offset25;
+    uint32_t acquired_by_name_size25;
+    uint32_t acquired_by_name_flags25;
+    uint32_t acquired_by_name_offset26;
+    uint32_t acquired_by_name_size26;
+    uint32_t acquired_by_name_flags26;
+    uint32_t acquired_by_name_offset27;
+    uint32_t acquired_by_name_size27;
+    uint32_t acquired_by_name_flags27;
+    uint32_t acquired_by_name_offset28;
+    uint32_t acquired_by_name_size28;
+    uint32_t acquired_by_name_flags28;
+    uint32_t acquired_by_name_offset29;
+    uint32_t acquired_by_name_size29;
+    uint32_t acquired_by_name_flags29;
+    uint32_t acquired_by_name_offset30;
+    uint32_t acquired_by_name_size30;
+    uint32_t acquired_by_name_flags30;
+    uint32_t acquired_by_name_offset31;
+    uint32_t acquired_by_name_size31;
+    uint32_t acquired_by_name_flags31;
+    uint32_t acquired_by_name_offset32;
+    uint32_t acquired_by_name_size32;
+    uint32_t acquired_by_name_flags32;
+    uint32_t acquired_by_name_offset33;
+    uint32_t acquired_by_name_size33;
+    uint32_t acquired_by_name_flags33;
+    uint32_t acquired_by_name_offset34;
+    uint32_t acquired_by_name_size34;
+    uint32_t acquired_by_name_flags34;
+    uint32_t acquired_by_name_offset35;
+    uint32_t acquired_by_name_size35;
+    uint32_t acquired_by_name_flags35;
+    uint32_t acquired_by_name_offset36;
+    uint32_t acquired_by_name_size36;
+    uint32_t acquired_by_name_flags36;
+    uint32_t acquired_by_name_offset37;
+    uint32_t acquired_by_name_size37;
+    uint32_t acquired_by_name_flags37;
+    uint32_t acquired_by_name_offset38;
+    uint32_t acquired_by_name_size38;
+    uint32_t acquired_by_name_flags38;
+    uint32_t acquired_by_name_offset39;
+    uint32_t acquired_by_name_size39;
+    uint32_t acquired_by_name_flags39;
+    uint32_t acquired_by_name_offset40;
+    uint32_t acquired_by_name_size40;
+    uint32_t acquired_by_name_flags40;
+    uint32_t acquired_by_name_offset41;
+    uint32_t acquired_by_name_size41;
+    uint32_t acquired_by_name_flags41;
+    uint32_t acquired_by_name_offset42;
+    uint32_t acquired_by_name_size42;
+    uint32_t acquired_by_name_flags42;
+    uint32_t acquired_by_name_offset43;
+    uint32_t acquired_by_name_size43;
+    uint32_t acquired_by_name_flags43;
+    uint32_t acquired_by_name_offset44;
+    uint32_t acquired_by_name_size44;
+    uint32_t acquired_by_name_flags44;
+    uint32_t acquired_by_name_offset45;
+    uint32_t acquired_by_name_size45;
+    uint32_t acquired_by_name_flags45;
+    uint32_t acquired_by_name_offset46;
+    uint32_t acquired_by_name_size46;
+    uint32_t acquired_by_name_flags46;
+    uint32_t acquired_by_name_offset47;
+    uint32_t acquired_by_name_size47;
+    uint32_t acquired_by_name_flags47;
+    uint32_t acquired_by_name_offset48;
+    uint32_t acquired_by_name_size48;
+    uint32_t acquired_by_name_flags48;
+    uint32_t acquired_by_name_offset49;
+    uint32_t acquired_by_name_size49;
+    uint32_t acquired_by_name_flags49;
+    uint32_t acquired_by_name_offset50;
+    uint32_t acquired_by_name_size50;
+    uint32_t acquired_by_name_flags50;
+    uint32_t acquired_by_name_offset51;
+    uint32_t acquired_by_name_size51;
+    uint32_t acquired_by_name_flags51;
+    uint32_t acquired_by_name_offset52;
+    uint32_t acquired_by_name_size52;
+    uint32_t acquired_by_name_flags52;
+    uint32_t acquired_by_name_offset53;
+    uint32_t acquired_by_name_size53;
+    uint32_t acquired_by_name_flags53;
+    uint32_t acquired_by_name_offset54;
+    uint32_t acquired_by_name_size54;
+    uint32_t acquired_by_name_flags54;
+    uint32_t acquired_by_name_offset55;
+    uint32_t acquired_by_name_size55;
+    uint32_t acquired_by_name_flags55;
+    uint32_t acquired_by_name_offset56;
+    uint32_t acquired_by_name_size56;
+    uint32_t acquired_by_name_flags56;
+    uint32_t acquired_by_name_offset57;
+    uint32_t acquired_by_name_size57;
+    uint32_t acquired_by_name_flags57;
+    uint32_t acquired_by_name_offset58;
+    uint32_t acquired_by_name_size58;
+    uint32_t acquired_by_name_flags58;
+    uint32_t acquired_by_name_offset59;
+    uint32_t acquired_by_name_size59;
+    uint32_t acquired_by_name_flags59;
+    uint32_t acquired_by_name_offset60;
+    uint32_t acquired_by_name_size60;
+    uint32_t acquired_by_name_flags60;
+    uint32_t acquired_by_name_offset61;
+    uint32_t acquired_by_name_size61;
+    uint32_t acquired_by_name_flags61;
+    uint32_t acquired_by_name_offset62;
+    uint32_t acquired_by_name_size62;
+    uint32_t acquired_by_name_flags62;
+    uint32_t acquired_by_name_offset63;
+    uint32_t acquired_by_name_size63;
+    uint32_t acquired_by_name_flags63;
+    uint32_t acquired_by_name_offset64;
+    uint32_t acquired_by_name_size64;
+    uint32_t acquired_by_name_flags64;
+    uint32_t acquired_by_name_offset65;
+    uint32_t acquired_by_name_size65;
+    uint32_t acquired_by_name_flags65;
+    uint32_t acquired_by_name_offset66;
+    uint32_t acquired_by_name_size66;
+    uint32_t acquired_by_name_flags66;
+    uint32_t acquired_by_name_offset67;
+    uint32_t acquired_by_name_size67;
+    uint32_t acquired_by_name_flags67;
+    uint32_t acquired_by_name_offset68;
+    uint32_t acquired_by_name_size68;
+    uint32_t acquired_by_name_flags68;
+    uint32_t acquired_by_name_offset69;
+    uint32_t acquired_by_name_size69;
+    uint32_t acquired_by_name_flags69;
+    uint32_t acquired_by_name_offset70;
+    uint32_t acquired_by_name_size70;
+    uint32_t acquired_by_name_flags70;
+    uint32_t acquired_by_name_offset71;
+    uint32_t acquired_by_name_size71;
+    uint32_t acquired_by_name_flags71;
+    uint32_t acquired_by_name_offset72;
+    uint32_t acquired_by_name_size72;
+    uint32_t acquired_by_name_flags72;
+    uint32_t acquired_by_name_offset73;
+    uint32_t acquired_by_name_size73;
+    uint32_t acquired_by_name_flags73;
+    uint32_t acquired_by_name_offset74;
+    uint32_t acquired_by_name_size74;
+    uint32_t acquired_by_name_flags74;
+    uint32_t acquired_by_name_offset75;
+    uint32_t acquired_by_name_size75;
+    uint32_t acquired_by_name_flags75;
+    uint32_t acquired_by_name_offset76;
+    uint32_t acquired_by_name_size76;
+    uint32_t acquired_by_name_flags76;
+    uint32_t acquired_by_name_offset77;
+    uint32_t acquired_by_name_size77;
+    uint32_t acquired_by_name_flags77;
+    uint32_t acquired_by_name_offset78;
+    uint32_t acquired_by_name_size78;
+    uint32_t acquired_by_name_flags78;
+    uint32_t acquired_by_name_offset79;
+    uint32_t acquired_by_name_size79;
+    uint32_t acquired_by_name_flags79;
+    uint32_t acquired_by_name_offset80;
+    uint32_t acquired_by_name_size80;
+    uint32_t acquired_by_name_flags80;
+    uint32_t acquired_by_name_offset81;
+    uint32_t acquired_by_name_size81;
+    uint32_t acquired_by_name_flags81;
+    uint32_t acquired_by_name_offset82;
+    uint32_t acquired_by_name_size82;
+    uint32_t acquired_by_name_flags82;
+    uint32_t acquired_by_name_offset83;
+    uint32_t acquired_by_name_size83;
+    uint32_t acquired_by_name_flags83;
+    uint32_t acquired_by_name_offset84;
+    uint32_t acquired_by_name_size84;
+    uint32_t acquired_by_name_flags84;
+    uint32_t acquired_by_name_offset85;
+    uint32_t acquired_by_name_size85;
+    uint32_t acquired_by_name_flags85;
+    uint32_t acquired_by_name_offset86;
+    uint32_t acquired_by_name_size86;
+    uint32_t acquired_by_name_flags86;
+    uint32_t acquired_by_name_offset87;
+    uint32_t acquired_by_name_size87;
+    uint32_t acquired_by_name_flags87;
+    uint32_t acquired_by_name_offset88;
+    uint32_t acquired_by_name_size88;
+    uint32_t acquired_by_name_flags88;
+    uint32_t acquired_by_name_offset89;
+    uint32_t acquired_by_name_size89;
+    uint32_t acquired_by_name_flags89;
+    uint32_t acquired_by_name_offset90;
+    uint32

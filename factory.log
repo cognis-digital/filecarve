@@ -110,3 +110,13 @@
 [2026-08-02 09:31:02]   +polyglot/ruby/quick_forensic_report.rb  (loc now ~8241)
 [2026-08-02 10:01:21]   ask(code/omnicoder) error: Ollama unreachable at http://127.0.0.1:11434 after 3 tries: timed out — falling back to fleet
 [2026-08-02 10:16:44]   +polyglot/csharp/quick_forensic_report.cs  (loc now ~8326)
+[2026-08-02 10:16:50] === done · filecarve · loc=8326 · {'committed': True, 'pushed': True, 'push_err': ''} ===
+[2026-09-11 07:27:28] === enhance · filecarve · words=120000 loc>=10000 langs=9 push=True ===
+[2026-09-11 07:27:32] phase DOCS — longform 120000-word corpus -> docs/corpus/
+[2026-09-11 14:17:10] phase POLYGLOT — expanding to >= 10000 LOC across 9 languages
+[2026-09-11 14:17:43]   facets: ['image_parser', 'sig_db_loader', 'sig_matcher', 'file_carver', 'mem_dump_handler', 'output_writer']
+[2026-09-11 14:21:18]   +polyglot/python/image_parser.py  (loc now ~8689)
+[2026-09-11 14:23:35]   +polyglot/go/image_parser.go  (loc now ~9174)
+[2026-09-11 14:25:25]   +polyglot/rust/image_parser.rs  (loc now ~9644)
+[2026-09-11 14:29:05]   +polyglot/c/image_parser.c  (loc now ~9866)
+[2026-09-11 14:30:55]   +polyglot/cpp/image_parser.cpp  (loc now ~10183)
